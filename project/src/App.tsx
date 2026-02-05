@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Plus, Trash2 } from 'lucide-react';
+import { MessageCircle, Plus, Trash2, Menu, X } from 'lucide-react';
 import { sendMessageToDify, resetConversation, checkHealth, type Message, type Conversation } from './lib/api';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
@@ -12,6 +12,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [apiStatus, setApiStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 会話履歴をlocalStorageから読み込み
@@ -88,6 +89,7 @@ function App() {
     saveConversations(updatedConvs);
     setCurrentConversationId(newConversation.id);
     setMessages([]);
+    setSidebarOpen(false); // モバイルでサイドバーを閉じる
   };
 
   const deleteConversation = (id: string, e: React.MouseEvent) => {
@@ -104,6 +106,11 @@ function App() {
       setMessages([]);
       setShowWelcome(true);
     }
+  };
+
+  const selectConversation = (id: string) => {
+    setCurrentConversationId(id);
+    setSidebarOpen(false); // モバイルでサイドバーを閉じる
   };
 
   const handleSendMessage = async (content: string) => {
@@ -177,14 +184,35 @@ function App() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      <div className="w-64 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-4 border-b border-slate-200">
+      {/* モバイル用オーバーレイ */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* サイドバー */}
+      <div className={`
+        fixed md:relative inset-y-0 left-0 z-50
+        w-64 bg-white border-r border-slate-200 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        {/* モバイル用閉じるボタン */}
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 md:block">
           <button
             onClick={createNewConversation}
-            className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg"
+            className="flex-1 md:w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg"
           >
             <Plus size={18} />
             新しい相談
+          </button>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="ml-2 p-2 rounded-lg hover:bg-slate-100 md:hidden"
+          >
+            <X size={24} />
           </button>
         </div>
 
@@ -192,7 +220,7 @@ function App() {
           {conversations.map(conversation => (
             <div
               key={conversation.id}
-              onClick={() => setCurrentConversationId(conversation.id)}
+              onClick={() => selectConversation(conversation.id)}
               className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group flex items-center justify-between ${
                 currentConversationId === conversation.id
                   ? 'bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200'
@@ -232,7 +260,19 @@ function App() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
+      {/* メインコンテンツ */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* モバイル用ヘッダー */}
+        <div className="flex items-center gap-3 p-3 bg-white border-b border-slate-200 md:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg hover:bg-slate-100"
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="font-semibold text-slate-800">料理レシピAI</h1>
+        </div>
+
         {showWelcome ? (
           <WelcomeScreen onStart={handleStartChat} />
         ) : (
