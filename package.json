@@ -7,25 +7,24 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "tsc && npm run copy-client",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:backend": "npx tsc && npm run copy-client",
     "build:frontend": "cd project && npm install && npm run build",
-    "build:all": "npm run build:frontend && npm run build",
     "copy-client": "node -e \"const fs=require('fs');const path=require('path');const src='src/client';const dest='dist/client';if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});fs.readdirSync(src).forEach(f=>fs.copyFileSync(path.join(src,f),path.join(dest,f)));\"",
-    "start": "NODE_ENV=production node dist/server/server.js",
-    "start:windows": "set NODE_ENV=production && node dist/server/server.js",
+    "start": "node dist/server/server.js",
     "dev": "ts-node src/server/server.ts",
     "watch": "tsc -w"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "ts-node": "^10.9.2"
   }
 }
