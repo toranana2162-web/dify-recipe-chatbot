@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run build:frontend && npm run build:backend",
     "build:backend": "npx tsc && npm run copy-client",
-    "build:frontend": "cd project && npm install && npm run build",
+    "build:frontend": "cd project && npm install --include=dev && npm run build",
     "copy-client": "node -e \"const fs=require('fs');const path=require('path');const src='src/client';const dest='dist/client';if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});fs.readdirSync(src).forEach(f=>fs.copyFileSync(path.join(src,f),path.join(dest,f)));\"",
     "start": "node dist/server/server.js",
     "dev": "ts-node src/server/server.ts",
