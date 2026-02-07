@@ -117,6 +117,12 @@ function App() {
     if (!currentConversationId) return;
 
     setIsLoading(true);
+    
+    // 最初のメッセージかどうかを先に判定
+    const isFirstMessage = messages.length === 0;
+    const newTitle = isFirstMessage 
+      ? content.slice(0, 30) + (content.length > 30 ? '...' : '')
+      : null;
 
     // ユーザーメッセージを追加
     const userMessage: Message = {
@@ -130,10 +136,10 @@ function App() {
     saveMessages(currentConversationId, updatedMessages);
 
     // 最初のメッセージの場合、会話タイトルを更新
-    if (messages.length === 0) {
+    if (isFirstMessage && newTitle) {
       const updatedConvs = conversations.map(c =>
         c.id === currentConversationId
-          ? { ...c, title: content.slice(0, 30) + (content.length > 30 ? '...' : ''), updated_at: new Date().toISOString() }
+          ? { ...c, title: newTitle, updated_at: new Date().toISOString() }
           : c
       );
       saveConversations(updatedConvs);
@@ -154,13 +160,16 @@ function App() {
       const finalMessages = [...updatedMessages, assistantMessage];
       saveMessages(currentConversationId, finalMessages);
 
-      // 会話の更新日時を更新
-      const updatedConvs = conversations.map(c =>
-        c.id === currentConversationId
-          ? { ...c, updated_at: new Date().toISOString() }
-          : c
-      );
-      saveConversations(updatedConvs);
+      // 会話の更新日時を更新（タイトルが設定されていれば保持）
+      setConversations(prevConvs => {
+        const updatedConvs = prevConvs.map(c =>
+          c.id === currentConversationId
+            ? { ...c, updated_at: new Date().toISOString() }
+            : c
+        );
+        localStorage.setItem('conversations', JSON.stringify(updatedConvs));
+        return updatedConvs;
+      });
 
     } catch (error) {
       // エラーメッセージを表示
