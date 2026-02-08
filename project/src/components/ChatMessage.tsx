@@ -30,16 +30,13 @@ function extractShoppingList(content: string): { items: string[]; contentWithout
     }
     
     // 別のセクションの開始を検出（買い物リストセクションの終了）
+    // ■、【、## で始まる行のみ新しいセクションとみなす
     if (inShoppingList && (
       trimmedLine.startsWith('■') ||
       trimmedLine.startsWith('【') ||
-      trimmedLine.startsWith('##') ||
-      (trimmedLine.length > 0 && !trimmedLine.startsWith('・') && !trimmedLine.startsWith('-') && !trimmedLine.startsWith('•') && !trimmedLine.match(/^\d+[\.\)]/))
+      trimmedLine.startsWith('##')
     )) {
-      // 空行でなく、リストマーカーでもない場合は新しいセクションとみなす
-      if (trimmedLine.length > 0) {
-        inShoppingList = false;
-      }
+      inShoppingList = false;
     }
     
     // 買い物リストのアイテムを抽出
@@ -48,6 +45,10 @@ function extractShoppingList(content: string): { items: string[]; contentWithout
       if (itemMatch) {
         shoppingItems.push(itemMatch[1].trim());
         continue; // リストアイテムはotherLinesに追加しない
+      }
+      // 買い物リスト内の説明文は表示しない（チェックボックスUIに含めるため）
+      if (trimmedLine.length > 0 && !trimmedLine.includes('買い物リスト')) {
+        continue;
       }
     }
     
