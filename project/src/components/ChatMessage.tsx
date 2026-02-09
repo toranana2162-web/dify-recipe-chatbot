@@ -11,6 +11,7 @@ function extractShoppingList(content: string): { items: string[]; contentWithout
   const lines = content.split('\n');
   const shoppingItems: string[] = [];
   const otherLines: string[] = [];
+  const shoppingHeaderLines: string[] = []; // 買い物リストのヘッダー行を一時保存
   
   let inShoppingList = false;
   
@@ -25,7 +26,7 @@ function extractShoppingList(content: string): { items: string[]; contentWithout
       trimmedLine.includes('購入が必要')
     ) {
       inShoppingList = true;
-      otherLines.push(line); // ヘッダー行はそのまま保持
+      shoppingHeaderLines.push(line); // ヘッダー行を一時保存（後でアイテムがあれば削除）
       continue;
     }
     
@@ -37,6 +38,8 @@ function extractShoppingList(content: string): { items: string[]; contentWithout
       trimmedLine.startsWith('##')
     )) {
       inShoppingList = false;
+      // 買い物リストが空だった場合、ヘッダーも表示しない
+      shoppingHeaderLines.length = 0;
     }
     
     // 買い物リストのアイテムを抽出
@@ -47,13 +50,16 @@ function extractShoppingList(content: string): { items: string[]; contentWithout
         continue; // リストアイテムはotherLinesに追加しない
       }
       // 買い物リスト内の説明文は表示しない（チェックボックスUIに含めるため）
-      if (trimmedLine.length > 0 && !trimmedLine.includes('買い物リスト')) {
+      if (trimmedLine.length > 0) {
         continue;
       }
     }
     
     otherLines.push(line);
   }
+  
+  // 買い物リストが空の場合、ヘッダーを表示しない
+  // 買い物リストにアイテムがある場合もヘッダーは不要（ShoppingListコンポーネントで表示）
   
   return {
     items: shoppingItems,
